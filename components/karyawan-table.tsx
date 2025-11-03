@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,14 +9,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils/date";
-import { TABLE_CONFIG, UI_TEXT } from "@/lib/constants/karyawan";
+import { TABLE_CONFIG } from "@/lib/constants/karyawan";
 import type { Karyawan } from "@/lib/stores/karyawan-store";
 
 interface KaryawanTableProps {
   karyawans: Karyawan[];
-  sortField: string;
+  sortField: string | null;
   sortDirection: "ASC" | "DESC";
   onSort: (field: string) => void;
   onEdit: (karyawan: Karyawan) => void;
@@ -78,6 +77,7 @@ export function KaryawanTable({
           <TableRow>
             <TableHead className={TABLE_CONFIG.COLUMNS.NIK.width}>
               <button
+                type="button"
                 onClick={() => onSort("nik")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
@@ -87,6 +87,7 @@ export function KaryawanTable({
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.NAMA.width}>
               <button
+                type="button"
                 onClick={() => onSort("namaLengkap")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
@@ -96,6 +97,7 @@ export function KaryawanTable({
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.DEPARTEMEN.width}>
               <button
+                type="button"
                 onClick={() => onSort("departemenNama")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
@@ -105,6 +107,7 @@ export function KaryawanTable({
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.VENDOR.width}>
               <button
+                type="button"
                 onClick={() => onSort("vendorNama")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
@@ -117,6 +120,7 @@ export function KaryawanTable({
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.TANGGAL.width}>
               <button
+                type="button"
                 onClick={() => onSort("tanggalMasuk")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
