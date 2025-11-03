@@ -1,402 +1,253 @@
 "use client";
 
 import {
-  Building2,
+  CalendarCheck,
   Clock,
-  TrendingDown,
   TrendingUp,
-  UserCheck,
   Users,
+  UserCheck,
+  UserX,
+  Building2,
+  DollarSign,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  XAxis,
-} from "recharts";
+import { motion } from "framer-motion";
 
+import { StatCard } from "@/components/stat-card";
+import { AttendanceChart } from "@/components/charts/attendance-chart";
+import { OvertimeChart } from "@/components/charts/overtime-chart";
+import { DepartmentChart } from "@/components/charts/department-chart";
+import { ProductivityChart } from "@/components/charts/productivity-chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
-// Data untuk charts
-const absensiData = [
-  { month: "Jan", hadir: 186, izin: 80, sakit: 20, alpha: 10 },
-  { month: "Feb", hadir: 305, izin: 200, sakit: 30, alpha: 15 },
-  { month: "Mar", hadir: 237, izin: 120, sakit: 25, alpha: 12 },
-  { month: "Apr", hadir: 273, izin: 190, sakit: 35, alpha: 18 },
-  { month: "Mei", hadir: 209, izin: 130, sakit: 28, alpha: 14 },
-  { month: "Jun", hadir: 214, izin: 140, sakit: 32, alpha: 16 },
+const stats = [
+  {
+    title: "Total Karyawan",
+    value: "1,234",
+    description: "Karyawan aktif",
+    icon: Users,
+    trend: { value: 12, isPositive: true },
+  },
+  {
+    title: "Hadir Hari Ini",
+    value: "1,180",
+    description: "95.6% kehadiran",
+    icon: UserCheck,
+    trend: { value: 2.5, isPositive: true },
+  },
+  {
+    title: "Izin/Sakit",
+    value: "42",
+    description: "3.4% dari total",
+    icon: CalendarCheck,
+    trend: { value: -1.2, isPositive: false },
+  },
+  {
+    title: "Alpha",
+    value: "12",
+    description: "1.0% dari total",
+    icon: UserX,
+    trend: { value: -0.5, isPositive: true },
+  },
+  {
+    title: "Overtime Bulan Ini",
+    value: "314",
+    description: "Jam overtime",
+    icon: Clock,
+    trend: { value: 8.3, isPositive: true },
+  },
+  {
+    title: "Total Departemen",
+    value: "18",
+    description: "Departemen aktif",
+    icon: Building2,
+  },
+  {
+    title: "Rata-rata Gaji",
+    value: "Rp 8.5jt",
+    description: "Per karyawan/bulan",
+    icon: DollarSign,
+    trend: { value: 5.2, isPositive: true },
+  },
+  {
+    title: "Produktivitas",
+    value: "94%",
+    description: "Target tercapai",
+    icon: TrendingUp,
+    trend: { value: 3.1, isPositive: true },
+  },
 ];
 
-const overtimeData = [
-  { month: "Jan", hours: 120 },
-  { month: "Feb", hours: 150 },
-  { month: "Mar", hours: 180 },
-  { month: "Apr", hours: 140 },
-  { month: "Mei", hours: 200 },
-  { month: "Jun", hours: 170 },
+const recentActivity = [
+  {
+    name: "John Doe",
+    action: "Clock In",
+    time: "08:00",
+    department: "IT",
+    status: "on-time",
+  },
+  {
+    name: "Jane Smith",
+    action: "Clock In",
+    time: "08:15",
+    department: "HR",
+    status: "late",
+  },
+  {
+    name: "Bob Johnson",
+    action: "Clock Out",
+    time: "17:00",
+    department: "Production",
+    status: "on-time",
+  },
+  {
+    name: "Alice Williams",
+    action: "Overtime",
+    time: "18:30",
+    department: "QC",
+    status: "overtime",
+  },
+  {
+    name: "Charlie Brown",
+    action: "Clock In",
+    time: "08:30",
+    department: "Finance",
+    status: "late",
+  },
 ];
-
-const departmentData = [
-  { name: "Produksi", value: 400, fill: "hsl(var(--chart-1))" },
-  { name: "Marketing", value: 300, fill: "hsl(var(--chart-2))" },
-  { name: "IT", value: 200, fill: "hsl(var(--chart-3))" },
-  { name: "HR", value: 150, fill: "hsl(var(--chart-4))" },
-  { name: "Finance", value: 100, fill: "hsl(var(--chart-5))" },
-];
-
-const performanceData = [
-  { month: "Jan", target: 400, actual: 380 },
-  { month: "Feb", target: 400, actual: 420 },
-  { month: "Mar", target: 400, actual: 390 },
-  { month: "Apr", target: 400, actual: 410 },
-  { month: "Mei", target: 400, actual: 430 },
-  { month: "Jun", target: 400, actual: 415 },
-];
-
-const absensiConfig = {
-  hadir: {
-    label: "Hadir",
-    color: "hsl(var(--chart-1))",
-  },
-  izin: {
-    label: "Izin",
-    color: "hsl(var(--chart-2))",
-  },
-  sakit: {
-    label: "Sakit",
-    color: "hsl(var(--chart-3))",
-  },
-  alpha: {
-    label: "Alpha",
-    color: "hsl(var(--chart-4))",
-  },
-} satisfies ChartConfig;
-
-const overtimeConfig = {
-  hours: {
-    label: "Hours",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
-
-const performanceConfig = {
-  target: {
-    label: "Target",
-    color: "hsl(var(--chart-1))",
-  },
-  actual: {
-    label: "Actual",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="space-y-6">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
-        <SidebarTrigger />
-        <div className="flex flex-1 items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Selamat datang di Sistem Absensi Indofood
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1">
-              <div className="h-2 w-2 rounded-full bg-green-500" />
-              Online
-            </Badge>
-          </div>
-        </div>
-      </header>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-3xl font-bold tracking-tight">
+          Dashboard Overview
+        </h2>
+        <p className="text-muted-foreground">
+          Selamat datang di Sistem Absensi Indofood
+        </p>
+      </motion.div>
 
-      {/* Main Content */}
-      <main className="flex-1 space-y-6 p-6">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Karyawan
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-              <p className="flex items-center text-xs text-muted-foreground">
-                <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-                +20.1% dari bulan lalu
-              </p>
-            </CardContent>
-          </Card>
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, index) => (
+          <StatCard key={stat.title} {...stat} index={index} />
+        ))}
+      </div>
 
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Hadir Hari Ini
-              </CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,180</div>
-              <p className="flex items-center text-xs text-muted-foreground">
-                <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-                95.6% kehadiran
-              </p>
-            </CardContent>
-          </Card>
+      {/* Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <AttendanceChart />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <OvertimeChart />
+        </motion.div>
+      </div>
 
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Overtime
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">170 Jam</div>
-              <p className="flex items-center text-xs text-muted-foreground">
-                <TrendingDown className="mr-1 h-3 w-3 text-red-500" />
-                -15% dari bulan lalu
-              </p>
-            </CardContent>
-          </Card>
+      {/* Additional Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <DepartmentChart />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <ProductivityChart />
+        </motion.div>
+      </div>
 
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Departemen
-              </CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">Aktif beroperasi</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Row 1 */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <CardTitle>Statistik Absensi Bulanan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={absensiConfig} className="h-[300px]">
-                <BarChart accessibilityLayer data={absensiData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar
-                    dataKey="hadir"
-                    fill="var(--color-hadir)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="izin"
-                    fill="var(--color-izin)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="sakit"
-                    fill="var(--color-sakit)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="alpha"
-                    fill="var(--color-alpha)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <CardTitle>Trend Overtime</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={overtimeConfig} className="h-[300px]">
-                <AreaChart accessibilityLayer data={overtimeData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    dataKey="hours"
-                    type="monotone"
-                    fill="var(--color-hours)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-hours)"
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <CardTitle>Distribusi Karyawan per Departemen</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center">
-              <ChartContainer
-                config={{
-                  value: {
-                    label: "Karyawan",
-                  },
-                }}
-                className="h-[300px]"
-              >
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Pie
-                    data={departmentData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={60}
-                    strokeWidth={5}
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <CardTitle>Target vs Actual Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={performanceConfig} className="h-[300px]">
-                <LineChart accessibilityLayer data={performanceData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Line
-                    dataKey="target"
-                    type="monotone"
-                    stroke="var(--color-target)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    dataKey="actual"
-                    type="monotone"
-                    stroke="var(--color-actual)"
-                    strokeWidth={2}
-                    dot={{
-                      fill: "var(--color-actual)",
-                    }}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card className="transition-all hover:shadow-lg">
+      {/* Recent Activity */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <Card>
           <CardHeader>
-            <CardTitle>Aktivitas Terbaru</CardTitle>
+            <CardTitle>Aktivitas Terkini</CardTitle>
+            <CardDescription>
+              Aktivitas absensi karyawan hari ini
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  name: "John Doe",
-                  action: "Clock in",
-                  time: "08:00 AM",
-                  type: "success",
-                },
-                {
-                  name: "Jane Smith",
-                  action: "Clock out",
-                  time: "05:30 PM",
-                  type: "info",
-                },
-                {
-                  name: "Bob Johnson",
-                  action: "Overtime request",
-                  time: "03:15 PM",
-                  type: "warning",
-                },
-                {
-                  name: "Alice Williams",
-                  action: "Sick leave",
-                  time: "07:45 AM",
-                  type: "error",
-                },
-              ].map((activity, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-accent"
+              {recentActivity.map((activity, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                  className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-2 w-2 rounded-full ${activity.type === "success"
-                          ? "bg-green-500"
-                          : activity.type === "info"
-                            ? "bg-blue-500"
-                            : activity.type === "warning"
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
-                    />
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      {activity.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </div>
                     <div>
-                      <p className="text-sm font-medium">{activity.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {activity.action}
+                      <p className="font-medium">{activity.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {activity.department}
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {activity.time}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-medium">{activity.action}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {activity.time}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={
+                        activity.status === "on-time"
+                          ? "default"
+                          : activity.status === "late"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                    >
+                      {activity.status === "on-time"
+                        ? "Tepat Waktu"
+                        : activity.status === "late"
+                          ? "Terlambat"
+                          : "Lembur"}
+                    </Badge>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </CardContent>
         </Card>
-      </main>
+      </motion.div>
     </div>
   );
 }
