@@ -8,6 +8,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator zod {
+  provider = "prisma-zod-generator"
+}
+
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -28,6 +32,7 @@ model User {
 
 model Departemen {
   id             String     @id @default(cuid())
+  slugDepartemen String     @unique
   namaDepartemen String     @unique
   Karyawan       Karyawan[]
 
@@ -37,6 +42,7 @@ model Departemen {
 
 model Vendor {
   id         String     @id @default(cuid())
+  slugVendor String     @unique
   namaVendor String     @unique
   alamat     String
   noTelp     String     @unique

@@ -33,10 +33,11 @@
     "react-dom": "19.2.0",
     "react-hot-toast": "^2.6.0",
     "recharts": "2.15.4",
-    "tailwind-merge": "^3.3.1",
-    "zod": "^4.1.12"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "zod": "^4.1.12",
+    "prisma-zod-generator": "^1.31.2",
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^3.0.0",
