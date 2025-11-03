@@ -8,11 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator zod {
-  provider = "prisma-zod-generator"
-  output   = "../lib/generated/prisma/zod"
-}
-
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -76,9 +71,9 @@ model Karyawan {
   vendorId     String
   user         User?      @relation(fields: [userId], references: [id])
   userId       String?
-  GajiPokok    GajiPokok  @relation(fields: [gajiPokokId], references: [id])
-  gajiPokokId  String
-  Absensi      Absensi[]
+
+  Absensi   Absensi[]
+  GajiPokok GajiPokok[]
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -101,7 +96,8 @@ model GajiPokok {
   id         String  @id @default(cuid())
   jumlahGaji Decimal
 
-  Karyawan Karyawan[]
+  Karyawan   Karyawan? @relation(fields: [karyawanId], references: [id])
+  karyawanId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
