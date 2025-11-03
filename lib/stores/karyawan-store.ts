@@ -1,15 +1,13 @@
 import { create } from "zustand";
 import { toast } from "react-hot-toast";
-import type { KaryawanModel } from "@/lib/generated/prisma/models/Karyawan";
-import type { DepartemenModel } from "@/lib/generated/prisma/models/Departemen";
-import type { VendorModel } from "@/lib/generated/prisma/models/Vendor";
+import type { Karyawan, Departemen, Vendor } from "@/lib/generated/prisma";
 
 // ===== TYPE DEFINITIONS =====
 
 // Extended Karyawan type with computed fields from relations
-export type KaryawanWithRelations = KaryawanModel & {
-  departemen: DepartemenModel;
-  vendor: VendorModel;
+export type KaryawanWithRelations = Karyawan & {
+  departemen: Departemen;
+  vendor: Vendor;
 };
 
 // Form data type for create/update operations
@@ -27,8 +25,8 @@ export interface KaryawanFormData {
 interface KaryawanStore {
   // Data state
   karyawans: KaryawanWithRelations[];
-  departemens: DepartemenModel[];
-  vendors: VendorModel[];
+  departemens: Departemen[];
+  vendors: Vendor[];
   loading: boolean;
 
   // UI state

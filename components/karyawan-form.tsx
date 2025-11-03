@@ -25,15 +25,14 @@ import {
 } from "@/lib/validations/karyawan";
 import { toast } from "react-hot-toast";
 import type { KaryawanFormData as StoreKaryawanFormData } from "@/lib/stores/karyawan-store";
-import type { DepartemenModel } from "@/lib/generated/prisma/models/Departemen";
-import type { VendorModel } from "@/lib/generated/prisma/models/Vendor";
+import type { Departemen, Vendor } from "@/lib/generated/prisma";
 
 interface KaryawanFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   karyawan?: StoreKaryawanFormData | null;
-  departemens: DepartemenModel[];
-  vendors: VendorModel[];
+  departemens: Departemen[];
+  vendors: Vendor[];
   onSuccess: () => void;
 }
 
