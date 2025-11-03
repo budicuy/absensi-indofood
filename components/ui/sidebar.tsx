@@ -102,14 +102,13 @@ function SidebarProvider({
             // biome-ignore lint/suspicious/noDocumentCookie: Fallback for environments without Cookie Store API
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; ${expires}; path=/; SameSite=Lax`;
           }
-        } catch (error) {
+        } catch {
           // Fallback for environments where both APIs might be restricted
-          console.warn("Failed to set sidebar state cookie:", error);
           // Try localStorage as a last resort
           try {
             localStorage.setItem(SIDEBAR_COOKIE_NAME, openState.toString());
-          } catch (localError) {
-            console.warn("Failed to use localStorage as fallback:", localError);
+          } catch {
+            // Silent fail - sidebar state persistence is not critical
           }
         }
       };

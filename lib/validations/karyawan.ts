@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const karyawanSchema = z.object({
-  nik: z.string().min(1, "NIK wajib diisi"),
+  nik: z
+    .string()
+    .min(1, "NIK wajib diisi")
+    .regex(/^\d+$/, "NIK harus berupa angka"),
   NamaLengkap: z.string().min(1, "Nama lengkap wajib diisi"),
   alamat: z.string().min(1, "Alamat wajib diisi"),
   noTelp: z.string().min(1, "Nomor telepon wajib diisi"),

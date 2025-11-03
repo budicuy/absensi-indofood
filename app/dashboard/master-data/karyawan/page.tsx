@@ -59,6 +59,10 @@ export default function KaryawanPage() {
     filterDepartemenId,
     filterVendorId,
 
+    // Pagination state
+    currentPage,
+    itemsPerPage,
+
     // Actions
     fetchData,
     deleteKaryawan,
@@ -74,6 +78,10 @@ export default function KaryawanPage() {
     setFilterDepartemenId,
     setFilterVendorId,
     clearFilters,
+
+    // Pagination actions
+    setCurrentPage,
+    setItemsPerPage,
   } = useKaryawanStore();
 
   // ===== EFFECTS =====
@@ -141,16 +149,35 @@ export default function KaryawanPage() {
     return result;
   }, [karyawans, searchQuery, sortConfig, filterDepartemenId, filterVendorId]);
 
+  // ===== PAGINATION LOGIC =====
+  const totalItems = filteredKaryawans.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedKaryawans = filteredKaryawans.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterDepartemenId, filterVendorId, setCurrentPage]);
+
   // ===== EVENT HANDLERS =====
   const handleDeleteConfirm = () => {
     if (karyawanToDelete) {
-      deleteKaryawan(Number(karyawanToDelete));
+      deleteKaryawan(karyawanToDelete);
     }
   };
 
   const handleFormSuccess = () => {
     setFormOpen(false);
     fetchData();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ===== LOADING STATE =====
@@ -191,9 +218,29 @@ export default function KaryawanPage() {
             <div>
               <CardTitle>{UI_TEXT.PAGE.CARD_TITLE}</CardTitle>
               <CardDescription>
-                Total {filteredKaryawans.length} dari {karyawans.length}{" "}
-                karyawan
+                Menampilkan {startIndex + 1}-{Math.min(endIndex, totalItems)}{" "}
+                dari {totalItems} karyawan
+                {filteredKaryawans.length < karyawans.length &&
+                  ` (difilter dari ${karyawans.length} total)`}
               </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Data per halaman:
+              </span>
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => setItemsPerPage(Number(value))}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="100">100</SelectItem>
+                  <SelectItem value="200">200</SelectItem>
+                  <SelectItem value="500">500</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -267,13 +314,129 @@ export default function KaryawanPage() {
         <CardContent className="p-6">
           {/* Data Table */}
           <KaryawanTable
-            karyawans={filteredKaryawans}
+            karyawans={paginatedKaryawans}
             sortField={sortConfig.key}
             sortDirection={sortConfig.direction}
             onSort={handleSort}
             onEdit={openEditForm}
             onDelete={openDeleteDialog}
           />
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center mt-4 pt-4 border-t gap-4">
+              <div className="text-sm text-muted-foreground">
+                Halaman {currentPage} dari {totalPages}
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Sebelumnya
+                </Button>
+
+                {/* Page Numbers */}
+                {(() => {
+                  const pages = [];
+                  const maxVisible = 5;
+                  let startPage = Math.max(
+                    1,
+                    currentPage - Math.floor(maxVisible / 2),
+                  );
+                  const endPage = Math.min(
+                    totalPages,
+                    startPage + maxVisible - 1,
+                  );
+
+                  // Adjust start if we're near the end
+                  if (endPage - startPage < maxVisible - 1) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                  }
+
+                  // First page
+                  if (startPage > 1) {
+                    pages.push(
+                      <Button
+                        key={1}
+                        variant={currentPage === 1 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        className="w-10"
+                      >
+                        1
+                      </Button>,
+                    );
+                    if (startPage > 2) {
+                      pages.push(
+                        <span
+                          key="dots1"
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>,
+                      );
+                    }
+                  }
+
+                  // Page numbers
+                  for (let i = startPage; i <= endPage; i++) {
+                    pages.push(
+                      <Button
+                        key={i}
+                        variant={currentPage === i ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(i)}
+                        className="w-10"
+                      >
+                        {i}
+                      </Button>,
+                    );
+                  }
+
+                  // Last page
+                  if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                      pages.push(
+                        <span
+                          key="dots2"
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>,
+                      );
+                    }
+                    pages.push(
+                      <Button
+                        key={totalPages}
+                        variant={
+                          currentPage === totalPages ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        className="w-10"
+                      >
+                        {totalPages}
+                      </Button>,
+                    );
+                  }
+
+                  return pages;
+                })()}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Selanjutnya
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

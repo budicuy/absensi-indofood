@@ -63,6 +63,11 @@ export const resolvers = {
       _: unknown,
       { input }: { input: CreateKaryawanInput },
     ) => {
+      // Validasi NIK hanya angka
+      if (!/^\d+$/.test(input.nik)) {
+        throw new GraphQLError("NIK harus berupa angka");
+      }
+
       // Validasi NIK unik
       const existing = await prisma.karyawan.findUnique({
         where: { nik: input.nik },
@@ -95,6 +100,11 @@ export const resolvers = {
       _: unknown,
       { id, input }: { id: string; input: UpdateKaryawanInput },
     ) => {
+      // Validasi NIK hanya angka jika diubah
+      if (input.nik && !/^\d+$/.test(input.nik)) {
+        throw new GraphQLError("NIK harus berupa angka");
+      }
+
       // Validasi NIK unik jika diubah
       if (input.nik) {
         const existing = await prisma.karyawan.findFirst({

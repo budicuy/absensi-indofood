@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -164,9 +165,8 @@ export function KaryawanForm({
       );
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error("Terjadi kesalahan");
-      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -174,7 +174,7 @@ export function KaryawanForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[400px] sm:max-w-[600px] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {karyawan ? "Edit Karyawan" : "Tambah Karyawan"}
@@ -186,149 +186,189 @@ export function KaryawanForm({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nik">NIK</Label>
-              <Input
-                id="nik"
-                value={formData.nik}
-                onChange={(e) =>
-                  setFormData({ ...formData, nik: e.target.value })
-                }
-                placeholder="Masukkan NIK"
-              />
-              {errors.nik && (
-                <p className="text-sm text-destructive">{errors.nik}</p>
-              )}
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* Personal Info Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Informasi Personal
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="nik" className="required">
+                  NIK
+                </Label>
+                <Input
+                  id="nik"
+                  value={formData.nik}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setFormData({ ...formData, nik: value });
+                  }}
+                  placeholder="Masukkan NIK (hanya angka)"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                {errors.nik && (
+                  <p className="text-sm text-destructive">{errors.nik}</p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="NamaLengkap">Nama Lengkap</Label>
-              <Input
-                id="NamaLengkap"
-                value={formData.NamaLengkap}
-                onChange={(e) =>
-                  setFormData({ ...formData, NamaLengkap: e.target.value })
-                }
-                placeholder="Masukkan nama lengkap"
-              />
-              {errors.NamaLengkap && (
-                <p className="text-sm text-destructive">{errors.NamaLengkap}</p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="NamaLengkap" className="required">
+                  Nama Lengkap
+                </Label>
+                <Input
+                  id="NamaLengkap"
+                  value={formData.NamaLengkap}
+                  onChange={(e) =>
+                    setFormData({ ...formData, NamaLengkap: e.target.value })
+                  }
+                  placeholder="Masukkan nama lengkap"
+                />
+                {errors.NamaLengkap && (
+                  <p className="text-sm text-destructive">
+                    {errors.NamaLengkap}
+                  </p>
+                )}
+              </div>
 
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="alamat">Alamat</Label>
-              <Input
-                id="alamat"
-                value={formData.alamat}
-                onChange={(e) =>
-                  setFormData({ ...formData, alamat: e.target.value })
-                }
-                placeholder="Masukkan alamat"
-              />
-              {errors.alamat && (
-                <p className="text-sm text-destructive">{errors.alamat}</p>
-              )}
-            </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="alamat" className="required">
+                  Alamat
+                </Label>
+                <Textarea
+                  id="alamat"
+                  value={formData.alamat}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setFormData({ ...formData, alamat: e.target.value })
+                  }
+                  placeholder="Masukkan alamat lengkap"
+                  rows={3}
+                />
+                {errors.alamat && (
+                  <p className="text-sm text-destructive">{errors.alamat}</p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="noTelp">Nomor Telepon</Label>
-              <Input
-                id="noTelp"
-                value={formData.noTelp}
-                onChange={(e) =>
-                  setFormData({ ...formData, noTelp: e.target.value })
-                }
-                placeholder="Masukkan nomor telepon"
-              />
-              {errors.noTelp && (
-                <p className="text-sm text-destructive">{errors.noTelp}</p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="noTelp" className="required">
+                  Nomor Telepon
+                </Label>
+                <Input
+                  id="noTelp"
+                  value={formData.noTelp}
+                  onChange={(e) =>
+                    setFormData({ ...formData, noTelp: e.target.value })
+                  }
+                  placeholder="08xx-xxxx-xxxx"
+                />
+                {errors.noTelp && (
+                  <p className="text-sm text-destructive">{errors.noTelp}</p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tanggalMasukKaryawan">Tanggal Masuk</Label>
-              <Input
-                id="tanggalMasukKaryawan"
-                type="date"
-                value={formData.tanggalMasukKaryawan}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    tanggalMasukKaryawan: e.target.value,
-                  })
-                }
-              />
-              {errors.tanggalMasukKaryawan && (
-                <p className="text-sm text-destructive">
-                  {errors.tanggalMasukKaryawan}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="departemenId">Departemen</Label>
-              <Select
-                value={formData.departemenId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, departemenId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih departemen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {departemens.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
-                      {dept.namaDepartemen}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.departemenId && (
-                <p className="text-sm text-destructive">
-                  {errors.departemenId}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendorId">Vendor</Label>
-              <Select
-                value={formData.vendorId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, vendorId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih vendor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.namaVendor}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.vendorId && (
-                <p className="text-sm text-destructive">{errors.vendorId}</p>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="tanggalMasukKaryawan" className="required">
+                  Tanggal Masuk
+                </Label>
+                <Input
+                  id="tanggalMasukKaryawan"
+                  type="date"
+                  value={formData.tanggalMasukKaryawan}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      tanggalMasukKaryawan: e.target.value,
+                    })
+                  }
+                />
+                {errors.tanggalMasukKaryawan && (
+                  <p className="text-sm text-destructive">
+                    {errors.tanggalMasukKaryawan}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          {/* Company Info Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Informasi Perusahaan
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="departemenId" className="required">
+                  Departemen
+                </Label>
+                <Select
+                  value={formData.departemenId}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, departemenId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih departemen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departemens.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.namaDepartemen}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.departemenId && (
+                  <p className="text-sm text-destructive">
+                    {errors.departemenId}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vendorId" className="required">
+                  Vendor
+                </Label>
+                <Select
+                  value={formData.vendorId}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, vendorId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih vendor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vendors.map((vendor) => (
+                      <SelectItem key={vendor.id} value={vendor.id}>
+                        {vendor.namaVendor}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.vendorId && (
+                  <p className="text-sm text-destructive">{errors.vendorId}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>

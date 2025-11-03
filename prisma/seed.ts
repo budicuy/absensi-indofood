@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
-  await Promise.all([
-    prisma.user.deleteMany(),
-    prisma.vendor.deleteMany(),
-    prisma.departemen.deleteMany(),
-  ]);
+  // Clear existing data - proper order (child first, then parent)
+  await prisma.karyawan.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.vendor.deleteMany();
+  await prisma.departemen.deleteMany();
 
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
@@ -109,6 +109,162 @@ async function main() {
     skipDuplicates: true,
   });
   console.log("✅ Departemens created:", departemen.count);
+
+  // Generate random karyawan data
+  console.log("👥 Generating random karyawan...");
+
+  const firstNames = [
+    "Ahmad",
+    "Budi",
+    "Citra",
+    "Dewi",
+    "Eko",
+    "Fitri",
+    "Gunawan",
+    "Hani",
+    "Indra",
+    "Joko",
+    "Kartika",
+    "Lisa",
+    "Muhammad",
+    "Nur",
+    "Oka",
+    "Putra",
+    "Qori",
+    "Rani",
+    "Siti",
+    "Tono",
+    "Umar",
+    "Vina",
+    "Wati",
+    "Yanto",
+    "Zahra",
+  ];
+
+  const lastNames = [
+    "Santoso",
+    "Wijaya",
+    "Kusuma",
+    "Pratama",
+    "Hidayat",
+    "Saputra",
+    "Lestari",
+    "Permata",
+    "Cahaya",
+    "Wibowo",
+    "Nugroho",
+    "Setiawan",
+    "Putra",
+    "Putri",
+    "Hartono",
+    "Susanto",
+    "Rahayu",
+    "Marlina",
+    "Firmansyah",
+    "Purnomo",
+  ];
+
+  const streets = [
+    "Jl. Merdeka",
+    "Jl. Sudirman",
+    "Jl. Thamrin",
+    "Jl. Gatot Subroto",
+    "Jl. Ahmad Yani",
+    "Jl. Diponegoro",
+    "Jl. Pahlawan",
+    "Jl. Imam Bonjol",
+    "Jl. Veteran",
+    "Jl. Pemuda",
+  ];
+
+  const cities = [
+    "Jakarta",
+    "Bekasi",
+    "Tangerang",
+    "Depok",
+    "Bogor",
+    "Bandung",
+    "Semarang",
+    "Surabaya",
+    "Yogyakarta",
+    "Malang",
+  ];
+
+  // Get all vendors and departments
+  const allVendors = await prisma.vendor.findMany();
+  const allDepartments = await prisma.departemen.findMany();
+
+  // Generate 50 random karyawan
+  const karyawanData = [];
+  const usedNIKs = new Set<string>();
+  const usedPhones = new Set<string>();
+
+  for (let i = 0; i < 500; i++) {
+    // Generate unique NIK (16 digits)
+    let nik: string;
+    do {
+      nik = String(
+        Math.floor(1000000000000000 + Math.random() * 9000000000000000),
+      );
+    } while (usedNIKs.has(nik));
+    usedNIKs.add(nik);
+
+    // Generate unique phone number
+    let noTelp: string;
+    do {
+      const prefix = ["0812", "0813", "0821", "0822", "0852", "0853"][
+        Math.floor(Math.random() * 6)
+      ];
+      noTelp = prefix + String(Math.floor(10000000 + Math.random() * 90000000));
+    } while (usedPhones.has(noTelp));
+    usedPhones.add(noTelp);
+
+    // Random name
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const NamaLengkap = `${firstName} ${lastName}`;
+
+    // Random address
+    const street = streets[Math.floor(Math.random() * streets.length)];
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const number = Math.floor(1 + Math.random() * 200);
+    const alamat = `${street} No. ${number}, ${city}`;
+
+    // Random date in the last 5 years
+    const now = new Date();
+    const fiveYearsAgo = new Date(
+      now.getFullYear() - 5,
+      now.getMonth(),
+      now.getDate(),
+    );
+    const randomDate = new Date(
+      fiveYearsAgo.getTime() +
+        Math.random() * (now.getTime() - fiveYearsAgo.getTime()),
+    );
+
+    // Random vendor and department
+    const randomVendor =
+      allVendors[Math.floor(Math.random() * allVendors.length)];
+    const randomDepartment =
+      allDepartments[Math.floor(Math.random() * allDepartments.length)];
+
+    karyawanData.push({
+      nik,
+      NamaLengkap,
+      alamat,
+      noTelp,
+      tanggalMasukKaryawan: randomDate,
+      vendorId: randomVendor.id,
+      departemenId: randomDepartment.id,
+    });
+  }
+
+  // Bulk insert karyawan
+  const karyawan = await prisma.karyawan.createMany({
+    data: karyawanData,
+    skipDuplicates: true,
+  });
+  console.log("✅ Karyawan created:", karyawan.count);
 }
 
 main()

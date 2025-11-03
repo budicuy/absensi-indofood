@@ -48,9 +48,13 @@ interface KaryawanStore {
   filterDepartemenId: string | null;
   filterVendorId: string | null;
 
+  // Pagination state
+  currentPage: number;
+  itemsPerPage: number;
+
   // Actions - Data
   fetchData: () => Promise<void>;
-  deleteKaryawan: (id: number) => Promise<void>;
+  deleteKaryawan: (id: string) => Promise<void>;
 
   // Actions - UI
   setFormOpen: (open: boolean) => void;
@@ -59,7 +63,7 @@ interface KaryawanStore {
   setKaryawanToDelete: (id: string | null) => void;
   openEditForm: (karyawan: KaryawanWithRelations) => void;
   openAddForm: () => void;
-  openDeleteDialog: (id: number) => void;
+  openDeleteDialog: (id: string) => void;
 
   // Actions - Search & Sort
   setSearchQuery: (query: string) => void;
@@ -73,6 +77,10 @@ interface KaryawanStore {
   setFilterDepartemenId: (id: string | null) => void;
   setFilterVendorId: (id: string | null) => void;
   clearFilters: () => void;
+
+  // Actions - Pagination
+  setCurrentPage: (page: number) => void;
+  setItemsPerPage: (items: number) => void;
 
   // Computed
   getFilteredAndSortedKaryawans: () => KaryawanWithRelations[];
@@ -154,6 +162,8 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
   sortConfig: { key: null, direction: "ASC" },
   filterDepartemenId: null,
   filterVendorId: null,
+  currentPage: 1,
+  itemsPerPage: 100,
 
   // ===== DATA ACTIONS =====
   fetchData: async () => {
@@ -169,35 +179,27 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
       const result = await response.json();
 
       if (result.data) {
-        console.log(
-          "✅ Data received:",
-          result.data.karyawans?.length,
-          "karyawans",
-        );
-        console.log("📦 First karyawan:", result.data.karyawans?.[0]);
-
         set({
           karyawans: result.data.karyawans || [],
           departemens: result.data.departemens || [],
           vendors: result.data.vendors || [],
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("Gagal memuat data");
-      console.error(error);
     } finally {
       set({ loading: false });
     }
   },
 
-  deleteKaryawan: async (id: number) => {
+  deleteKaryawan: async (id: string) => {
     try {
       const response = await fetch("/api/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: GRAPHQL_QUERIES.DELETE,
-          variables: { id: id.toString() },
+          variables: { id },
         }),
       });
 
@@ -210,9 +212,8 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
 
       toast.success("Karyawan berhasil dihapus");
       await get().fetchData();
-    } catch (error) {
+    } catch {
       toast.error("Gagal menghapus karyawan");
-      console.error(error);
     } finally {
       set({ deleteDialogOpen: false, karyawanToDelete: null });
     }
@@ -242,8 +243,8 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
     set({ selectedKaryawan: null, formOpen: true });
   },
 
-  openDeleteDialog: (id: number) => {
-    set({ karyawanToDelete: id.toString(), deleteDialogOpen: true });
+  openDeleteDialog: (id: string) => {
+    set({ karyawanToDelete: id, deleteDialogOpen: true });
   },
 
   // ===== SEARCH & SORT ACTIONS =====
@@ -265,7 +266,12 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
       filterDepartemenId: null,
       filterVendorId: null,
       searchQuery: "",
+      currentPage: 1,
     }),
+
+  // ===== PAGINATION ACTIONS =====
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setItemsPerPage: (items) => set({ itemsPerPage: items, currentPage: 1 }),
 
   // ===== COMPUTED VALUES =====
   getFilteredAndSortedKaryawans: () => {
