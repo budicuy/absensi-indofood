@@ -1,22 +1,22 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
+  Building2,
   CalendarCheck,
   Clock,
-  TrendingUp,
-  Users,
-  UserCheck,
-  UserX,
-  Building2,
   DollarSign,
+  TrendingUp,
+  UserCheck,
+  Users,
+  UserX,
 } from "lucide-react";
-import { motion } from "framer-motion";
-
-import { StatCard } from "@/components/stat-card";
 import { AttendanceChart } from "@/components/charts/attendance-chart";
-import { OvertimeChart } from "@/components/charts/overtime-chart";
 import { DepartmentChart } from "@/components/charts/department-chart";
+import { OvertimeChart } from "@/components/charts/overtime-chart";
 import { ProductivityChart } from "@/components/charts/productivity-chart";
+import { StatCard } from "@/components/stat-card";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 const stats = [
   {
@@ -199,7 +198,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
                 <motion.div
-                  key={index}
+                  key={`${activity.name}-${activity.action}-${activity.time}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}

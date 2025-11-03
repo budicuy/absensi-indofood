@@ -2,7 +2,8 @@
 
 import { LogOut, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import toast from "react-hot-toast";
+import { logoutAction } from "@/app/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -13,8 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { logoutAction } from "@/app/actions/auth";
-import toast from "react-hot-toast";
 
 interface DashboardHeaderProps {
   user?: {

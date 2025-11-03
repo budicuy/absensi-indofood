@@ -3,9 +3,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
-
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +21,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import React from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -83,7 +82,39 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      // Using Cookie Store API when available, with fallback to document.cookie
+      const setCookie = async () => {
+        try {
+          // Try using the Cookie Store API first (more secure)
+          if ("cookieStore" in window && window.cookieStore) {
+            await window.cookieStore.set({
+              name: SIDEBAR_COOKIE_NAME,
+              value: openState.toString(),
+              expires: Date.now() + SIDEBAR_COOKIE_MAX_AGE * 1000,
+              path: "/",
+              sameSite: "lax",
+            });
+          } else {
+            // Fallback to document.cookie with proper error handling
+            const date = new Date();
+            date.setTime(date.getTime() + SIDEBAR_COOKIE_MAX_AGE * 1000);
+            const expires = `expires=${date.toUTCString()}`;
+            // biome-ignore lint/suspicious/noDocumentCookie: Fallback for environments without Cookie Store API
+            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; ${expires}; path=/; SameSite=Lax`;
+          }
+        } catch (error) {
+          // Fallback for environments where both APIs might be restricted
+          console.warn("Failed to set sidebar state cookie:", error);
+          // Try localStorage as a last resort
+          try {
+            localStorage.setItem(SIDEBAR_COOKIE_NAME, openState.toString());
+          } catch (localError) {
+            console.warn("Failed to use localStorage as fallback:", localError);
+          }
+        }
+      };
+
+      setCookie();
     },
     [setOpenProp, open],
   );
@@ -91,7 +122,7 @@ function SidebarProvider({
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-  }, [isMobile, setOpen, setOpenMobile]);
+  }, [isMobile, setOpen]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -123,7 +154,7 @@ function SidebarProvider({
       setOpenMobile,
       toggleSidebar,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
+    [state, open, setOpen, isMobile, openMobile, toggleSidebar],
   );
 
   return (

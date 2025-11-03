@@ -1,6 +1,6 @@
 "use client";
 
-import { Pie, PieChart, Cell, Legend, ResponsiveContainer } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 
 import {
   Card,
@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -80,8 +80,8 @@ export function DepartmentChart() {
               innerRadius={60}
               strokeWidth={5}
             >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
+              {chartData.map((entry) => (
+                <Cell key={`cell-${entry.department}`} fill={entry.fill} />
               ))}
             </Pie>
           </PieChart>
