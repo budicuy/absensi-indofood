@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistem Absensi Indofood
 
-## Getting Started
+Sistem absensi karyawan menggunakan Next.js 16, NextAuth.js v5, Prisma, dan MySQL.
 
-First, run the development server:
+## 🚀 Fitur
 
+- ✅ Autentikasi menggunakan JWT (NextAuth.js v5)
+- ✅ Login dengan username dan password
+- ✅ Server Actions (tanpa API routes)
+- ✅ UI modern dengan gradient dan animasi
+- ✅ Toast notifications
+- ✅ Protected routes dengan middleware
+- ✅ Type-safe dengan TypeScript dan Prisma
+
+## 📋 Prasyarat
+
+- Node.js 20+
+- pnpm
+- MySQL database
+
+## 🛠️ Instalasi
+
+1. Clone repository
+
+2. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Setup environment variables:
+```bash
+cp .env.example .env
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Edit `.env` file dengan konfigurasi database dan auth Anda:
+```env
+DATABASE_URL="mysql://user:password@localhost:3306/absensi_indofood"
+AUTH_SECRET="your-secret-key-here"
+AUTH_URL="http://localhost:3000"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Generate AUTH_SECRET dengan command:
+```bash
+openssl rand -base64 32
+```
 
-## Learn More
+5. Generate Prisma Client:
+```bash
+pnpm prisma generate
+```
 
-To learn more about Next.js, take a look at the following resources:
+6. Jalankan migrasi database:
+```bash
+pnpm prisma migrate dev --name init
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+7. Seed database dengan user dummy:
+```bash
+pnpm db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏃 Menjalankan Aplikasi
 
-## Deploy on Vercel
+Development:
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Production:
+```bash
+pnpm build
+pnpm start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 👤 Login Credentials (Default)
+
+Setelah menjalankan seed:
+- **Username**: `admin`
+- **Password**: `admin123`
+
+## 📁 Struktur Project
+
+```
+├── app/
+│   ├── actions/           # Server Actions
+│   │   └── auth.ts       # Login/Logout actions
+│   ├── api/
+│   │   └── auth/         # NextAuth API routes
+│   ├── dashboard/        # Dashboard page (protected)
+│   ├── login/            # Login page
+│   └── layout.tsx        # Root layout
+├── lib/
+│   ├── auth.ts           # NextAuth configuration
+│   ├── prisma.ts         # Prisma client
+│   └── generated/        # Generated Prisma types
+├── prisma/
+│   ├── schema.prisma     # Database schema
+│   └── seed.ts          # Database seeder
+├── types/
+│   └── next-auth.d.ts   # NextAuth type extensions
+└── proxy.ts             # Route protection (Next.js 16)
+```
+
+## 🔐 Keamanan
+
+- Password di-hash menggunakan bcryptjs (10 rounds)
+- JWT session dengan expiry 30 hari
+- Protected routes menggunakan proxy.ts (Next.js 16)
+- CSRF protection built-in NextAuth
+
+## 🎨 Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Auth**: NextAuth.js v5 (Auth.js)
+- **Database**: MySQL + Prisma ORM
+- **UI**: Tailwind CSS v4
+- **Icons**: Lucide React
+- **Notifications**: React Hot Toast
+- **Linter**: Biome.js
+- **TypeScript**: Full type safety
+
+## 📝 Scripts
+
+- `pnpm dev` - Jalankan development server
+- `pnpm build` - Build untuk production
+- `pnpm start` - Jalankan production server
+- `pnpm lint` - Check code quality
+- `pnpm format` - Format code
+- `pnpm db:seed` - Seed database
+
+## 🔄 Cara Menambah User Baru
+
+1. Buat password hash:
+```typescript
+import bcrypt from 'bcryptjs'
+const hashedPassword = await bcrypt.hash('yourpassword', 10)
+```
+
+2. Insert ke database melalui Prisma Studio:
+```bash
+pnpm prisma studio
+```
+
+Atau via seed script di `prisma/seed.ts`
+
+## 📄 License
+
+MIT

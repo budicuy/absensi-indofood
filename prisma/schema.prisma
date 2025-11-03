@@ -19,7 +19,3 @@ model User {
   @@map("user")
 
 }
-
-// model Account {
-//   // ... (Model standar dari Auth.js Prisma Adapter)
-// }
