@@ -8,7 +8,7 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   await Promise.all([
-    prisma.user.deleteMany(), 
+    prisma.user.deleteMany(),
     prisma.vendor.deleteMany(),
     prisma.departemen.deleteMany(),
   ]);
@@ -23,7 +23,6 @@ async function main() {
   });
 
   console.log("✅ User created:", user);
-
 
   const departemens = [
     {
@@ -69,9 +68,8 @@ async function main() {
     {
       namaDepartemen: "Outsourcing",
       slugDepartemen: "outsourcing",
-    },  
+    },
   ];
-
 
   const vendors = [
     {

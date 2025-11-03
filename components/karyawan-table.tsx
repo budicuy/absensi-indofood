@@ -11,16 +11,47 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/date";
 import { TABLE_CONFIG } from "@/lib/constants/karyawan";
-import type { Karyawan } from "@/lib/stores/karyawan-store";
+import type { KaryawanWithRelations } from "@/lib/stores/karyawan-store";
 
 interface KaryawanTableProps {
-  karyawans: Karyawan[];
+  karyawans: KaryawanWithRelations[];
   sortField: string | null;
   sortDirection: "ASC" | "DESC";
   onSort: (field: string) => void;
-  onEdit: (karyawan: Karyawan) => void;
+  onEdit: (karyawan: KaryawanWithRelations) => void;
   onDelete: (id: number) => void;
 }
+
+/**
+ * Generate consistent color based on string hash
+ */
+const getColorFromString = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // Return tailwind-compatible color classes with better styling
+  const colors = [
+    "bg-blue-100 text-blue-700 border-blue-300 font-medium",
+    "bg-green-100 text-green-700 border-green-300 font-medium",
+    "bg-purple-100 text-purple-700 border-purple-300 font-medium",
+    "bg-orange-100 text-orange-700 border-orange-300 font-medium",
+    "bg-pink-100 text-pink-700 border-pink-300 font-medium",
+    "bg-indigo-100 text-indigo-700 border-indigo-300 font-medium",
+    "bg-cyan-100 text-cyan-700 border-cyan-300 font-medium",
+    "bg-rose-100 text-rose-700 border-rose-300 font-medium",
+    "bg-amber-100 text-amber-700 border-amber-300 font-medium",
+    "bg-teal-100 text-teal-700 border-teal-300 font-medium",
+    "bg-emerald-100 text-emerald-700 border-emerald-300 font-medium",
+    "bg-violet-100 text-violet-700 border-violet-300 font-medium",
+    "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300 font-medium",
+    "bg-lime-100 text-lime-700 border-lime-300 font-medium",
+    "bg-sky-100 text-sky-700 border-sky-300 font-medium",
+  ];
+
+  return colors[Math.abs(hash) % colors.length];
+};
 
 /**
  * Data table component for displaying Karyawan records
@@ -88,11 +119,11 @@ export function KaryawanTable({
             <TableHead className={TABLE_CONFIG.COLUMNS.NAMA.width}>
               <button
                 type="button"
-                onClick={() => onSort("namaLengkap")}
+                onClick={() => onSort("NamaLengkap")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
                 {TABLE_CONFIG.COLUMNS.NAMA.label}
-                {renderSortIcon("namaLengkap")}
+                {renderSortIcon("NamaLengkap")}
               </button>
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.DEPARTEMEN.width}>
@@ -121,11 +152,11 @@ export function KaryawanTable({
             <TableHead className={TABLE_CONFIG.COLUMNS.TANGGAL.width}>
               <button
                 type="button"
-                onClick={() => onSort("tanggalMasuk")}
+                onClick={() => onSort("tanggalMasukKaryawan")}
                 className="flex items-center hover:text-foreground transition-colors font-semibold"
               >
                 {TABLE_CONFIG.COLUMNS.TANGGAL.label}
-                {renderSortIcon("tanggalMasuk")}
+                {renderSortIcon("tanggalMasukKaryawan")}
               </button>
             </TableHead>
             <TableHead className={TABLE_CONFIG.COLUMNS.AKSI.width}>
@@ -137,18 +168,38 @@ export function KaryawanTable({
           {karyawans.map((karyawan) => (
             <TableRow key={karyawan.id} className="hover:bg-muted/50">
               <TableCell className="font-medium">{karyawan.nik}</TableCell>
-              <TableCell>{karyawan.namaLengkap}</TableCell>
+              <TableCell>{karyawan.NamaLengkap}</TableCell>
               <TableCell>
-                <Badge variant="secondary">{karyawan.departemenNama}</Badge>
+                <Badge
+                  variant="outline"
+                  className={
+                    karyawan.departemen?.namaDepartemen
+                      ? getColorFromString(karyawan.departemen.namaDepartemen)
+                      : "bg-gray-100 text-gray-500 border-gray-200"
+                  }
+                >
+                  {karyawan.departemen?.namaDepartemen || "-"}
+                </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{karyawan.vendorNama}</Badge>
+                <Badge
+                  variant="outline"
+                  className={
+                    karyawan.vendor?.namaVendor
+                      ? getColorFromString(
+                          `vendor-${karyawan.vendor.namaVendor}`,
+                        )
+                      : "bg-gray-100 text-gray-500 border-gray-200"
+                  }
+                >
+                  {karyawan.vendor?.namaVendor || "-"}
+                </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {karyawan.noTelepon}
+                {karyawan.noTelp}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(karyawan.tanggalMasuk)}
+                {formatDate(karyawan.tanggalMasukKaryawan)}
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
@@ -163,7 +214,7 @@ export function KaryawanTable({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onDelete(karyawan.id)}
+                    onClick={() => onDelete(Number(karyawan.id))}
                     className="h-8 w-8 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400"
                   >
                     <Trash2 className="h-4 w-4" />

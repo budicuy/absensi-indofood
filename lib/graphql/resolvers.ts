@@ -59,7 +59,10 @@ export const resolvers = {
   },
 
   Mutation: {
-    createKaryawan: async (_: unknown, { input }: { input: CreateKaryawanInput }) => {
+    createKaryawan: async (
+      _: unknown,
+      { input }: { input: CreateKaryawanInput },
+    ) => {
       // Validasi NIK unik
       const existing = await prisma.karyawan.findUnique({
         where: { nik: input.nik },
@@ -90,7 +93,7 @@ export const resolvers = {
 
     updateKaryawan: async (
       _: unknown,
-      { id, input }: { id: string; input: UpdateKaryawanInput }
+      { id, input }: { id: string; input: UpdateKaryawanInput },
     ) => {
       // Validasi NIK unik jika diubah
       if (input.nik) {

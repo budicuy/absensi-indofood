@@ -1,47 +1,34 @@
 import { create } from "zustand";
 import { toast } from "react-hot-toast";
+import type { KaryawanModel } from "@/lib/generated/prisma/models/Karyawan";
+import type { DepartemenModel } from "@/lib/generated/prisma/models/Departemen";
+import type { VendorModel } from "@/lib/generated/prisma/models/Vendor";
 
 // ===== TYPE DEFINITIONS =====
 
-export interface Karyawan {
-  id: number;
-  nik: string;
-  namaLengkap: string;
-  alamat: string;
-  noTelepon: string;
-  tanggalMasuk: string | number | Date;
-  departemenId: number;
-  vendorId: number;
-  departemenNama: string;
-  vendorNama: string;
-}
+// Extended Karyawan type with computed fields from relations
+export type KaryawanWithRelations = KaryawanModel & {
+  departemen: DepartemenModel;
+  vendor: VendorModel;
+};
 
+// Form data type for create/update operations
 export interface KaryawanFormData {
-  id: string;
+  id?: string;
   nik: string;
-  namaLengkap: string;
+  NamaLengkap: string;
   alamat: string;
-  noTelepon: string;
-  tanggalMasuk: string;
+  noTelp: string;
+  tanggalMasukKaryawan: string;
   departemenId: string;
   vendorId: string;
 }
 
-interface Departemen {
-  id: string;
-  namaDepartemen: string;
-}
-
-interface Vendor {
-  id: string;
-  namaVendor: string;
-}
-
 interface KaryawanStore {
   // Data state
-  karyawans: Karyawan[];
-  departemens: Departemen[];
-  vendors: Vendor[];
+  karyawans: KaryawanWithRelations[];
+  departemens: DepartemenModel[];
+  vendors: VendorModel[];
   loading: boolean;
 
   // UI state
@@ -57,6 +44,10 @@ interface KaryawanStore {
     direction: "ASC" | "DESC";
   };
 
+  // Filter state
+  filterDepartemenId: string | null;
+  filterVendorId: string | null;
+
   // Actions - Data
   fetchData: () => Promise<void>;
   deleteKaryawan: (id: number) => Promise<void>;
@@ -66,7 +57,7 @@ interface KaryawanStore {
   setSelectedKaryawan: (karyawan: KaryawanFormData | null) => void;
   setDeleteDialogOpen: (open: boolean) => void;
   setKaryawanToDelete: (id: string | null) => void;
-  openEditForm: (karyawan: Karyawan) => void;
+  openEditForm: (karyawan: KaryawanWithRelations) => void;
   openAddForm: () => void;
   openDeleteDialog: (id: number) => void;
 
@@ -78,8 +69,13 @@ interface KaryawanStore {
   }) => void;
   handleSort: (key: string) => void;
 
+  // Actions - Filter
+  setFilterDepartemenId: (id: string | null) => void;
+  setFilterVendorId: (id: string | null) => void;
+  clearFilters: () => void;
+
   // Computed
-  getFilteredAndSortedKaryawans: () => Karyawan[];
+  getFilteredAndSortedKaryawans: () => KaryawanWithRelations[];
 }
 
 // ===== GRAPHQL QUERIES =====
@@ -142,33 +138,6 @@ const formatDateForInput = (dateString: string | number | Date): string => {
   }
 };
 
-/**
- * Transform GraphQL response to Karyawan interface
- */
-const transformKaryawan = (raw: {
-  id: string;
-  nik: string;
-  NamaLengkap: string;
-  alamat: string;
-  noTelp: string;
-  tanggalMasukKaryawan: string | number | Date;
-  departemenId: string;
-  vendorId: string;
-  departemen: { namaDepartemen: string };
-  vendor: { namaVendor: string };
-}): Karyawan => ({
-  id: Number(raw.id),
-  nik: raw.nik,
-  namaLengkap: raw.NamaLengkap,
-  alamat: raw.alamat,
-  noTelepon: raw.noTelp,
-  tanggalMasuk: raw.tanggalMasukKaryawan,
-  departemenId: Number(raw.departemenId),
-  vendorId: Number(raw.vendorId),
-  departemenNama: raw.departemen.namaDepartemen,
-  vendorNama: raw.vendor.namaVendor,
-});
-
 // ===== ZUSTAND STORE =====
 
 export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
@@ -183,6 +152,8 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
   karyawanToDelete: null,
   searchQuery: "",
   sortConfig: { key: null, direction: "ASC" },
+  filterDepartemenId: null,
+  filterVendorId: null,
 
   // ===== DATA ACTIONS =====
   fetchData: async () => {
@@ -198,8 +169,15 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
       const result = await response.json();
 
       if (result.data) {
+        console.log(
+          "✅ Data received:",
+          result.data.karyawans?.length,
+          "karyawans",
+        );
+        console.log("📦 First karyawan:", result.data.karyawans?.[0]);
+
         set({
-          karyawans: result.data.karyawans.map(transformKaryawan) || [],
+          karyawans: result.data.karyawans || [],
           departemens: result.data.departemens || [],
           vendors: result.data.vendors || [],
         });
@@ -246,16 +224,16 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
   setDeleteDialogOpen: (open) => set({ deleteDialogOpen: open }),
   setKaryawanToDelete: (id) => set({ karyawanToDelete: id }),
 
-  openEditForm: (karyawan: Karyawan) => {
+  openEditForm: (karyawan: KaryawanWithRelations) => {
     const karyawanForForm: KaryawanFormData = {
-      id: karyawan.id.toString(),
+      id: karyawan.id,
       nik: karyawan.nik,
-      namaLengkap: karyawan.namaLengkap,
+      NamaLengkap: karyawan.NamaLengkap,
       alamat: karyawan.alamat,
-      noTelepon: karyawan.noTelepon,
-      tanggalMasuk: formatDateForInput(karyawan.tanggalMasuk),
-      departemenId: karyawan.departemenId.toString(),
-      vendorId: karyawan.vendorId.toString(),
+      noTelp: karyawan.noTelp,
+      tanggalMasukKaryawan: formatDateForInput(karyawan.tanggalMasukKaryawan),
+      departemenId: karyawan.departemenId,
+      vendorId: karyawan.vendorId,
     };
     set({ selectedKaryawan: karyawanForForm, formOpen: true });
   },
@@ -279,6 +257,16 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
     set({ sortConfig: { key, direction } });
   },
 
+  // ===== FILTER ACTIONS =====
+  setFilterDepartemenId: (id) => set({ filterDepartemenId: id }),
+  setFilterVendorId: (id) => set({ filterVendorId: id }),
+  clearFilters: () =>
+    set({
+      filterDepartemenId: null,
+      filterVendorId: null,
+      searchQuery: "",
+    }),
+
   // ===== COMPUTED VALUES =====
   getFilteredAndSortedKaryawans: () => {
     const { karyawans, searchQuery, sortConfig } = get();
@@ -289,11 +277,11 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (k) =>
-          k.nik.toLowerCase().includes(query) ||
-          k.namaLengkap.toLowerCase().includes(query) ||
-          k.departemenNama.toLowerCase().includes(query) ||
-          k.vendorNama.toLowerCase().includes(query) ||
-          k.noTelepon.includes(searchQuery),
+          k.nik?.toLowerCase().includes(query) ||
+          k.NamaLengkap?.toLowerCase().includes(query) ||
+          k.departemen?.namaDepartemen?.toLowerCase().includes(query) ||
+          k.vendor?.namaVendor?.toLowerCase().includes(query) ||
+          k.noTelp?.includes(searchQuery),
       );
     }
 
@@ -306,27 +294,17 @@ export const useKaryawanStore = create<KaryawanStore>((set, get) => ({
         const key = sortConfig.key;
 
         if (key === "departemenNama") {
-          aValue = a.departemenNama;
-          bValue = b.departemenNama;
+          aValue = a.departemen?.namaDepartemen || "";
+          bValue = b.departemen?.namaDepartemen || "";
         } else if (key === "vendorNama") {
-          aValue = a.vendorNama;
-          bValue = b.vendorNama;
-        } else if (key === "tanggalMasuk") {
-          aValue = new Date(
-            typeof a.tanggalMasuk === "string" &&
-              !Number.isNaN(Number(a.tanggalMasuk))
-              ? Number(a.tanggalMasuk)
-              : a.tanggalMasuk,
-          ).getTime();
-          bValue = new Date(
-            typeof b.tanggalMasuk === "string" &&
-              !Number.isNaN(Number(b.tanggalMasuk))
-              ? Number(b.tanggalMasuk)
-              : b.tanggalMasuk,
-          ).getTime();
+          aValue = a.vendor?.namaVendor || "";
+          bValue = b.vendor?.namaVendor || "";
+        } else if (key === "tanggalMasukKaryawan") {
+          aValue = new Date(a.tanggalMasukKaryawan).getTime();
+          bValue = new Date(b.tanggalMasukKaryawan).getTime();
         } else if (key) {
-          aValue = a[key as keyof Karyawan] as string;
-          bValue = b[key as keyof Karyawan] as string;
+          aValue = a[key as keyof KaryawanWithRelations] as string;
+          bValue = b[key as keyof KaryawanWithRelations] as string;
         }
 
         if (aValue < bValue) {

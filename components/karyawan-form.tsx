@@ -24,23 +24,15 @@ import {
 } from "@/lib/validations/karyawan";
 import { toast } from "react-hot-toast";
 import type { KaryawanFormData as StoreKaryawanFormData } from "@/lib/stores/karyawan-store";
-
-interface Departemen {
-  id: string;
-  namaDepartemen: string;
-}
-
-interface Vendor {
-  id: string;
-  namaVendor: string;
-}
+import type { DepartemenModel } from "@/lib/generated/prisma/models/Departemen";
+import type { VendorModel } from "@/lib/generated/prisma/models/Vendor";
 
 interface KaryawanFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   karyawan?: StoreKaryawanFormData | null;
-  departemens: Departemen[];
-  vendors: Vendor[];
+  departemens: DepartemenModel[];
+  vendors: VendorModel[];
   onSuccess: () => void;
 }
 
@@ -69,10 +61,10 @@ export function KaryawanForm({
     if (karyawan) {
       setFormData({
         nik: karyawan.nik,
-        NamaLengkap: karyawan.namaLengkap,
+        NamaLengkap: karyawan.NamaLengkap,
         alamat: karyawan.alamat,
-        noTelp: karyawan.noTelepon,
-        tanggalMasukKaryawan: karyawan.tanggalMasuk,
+        noTelp: karyawan.noTelp,
+        tanggalMasukKaryawan: karyawan.tanggalMasukKaryawan,
         departemenId: karyawan.departemenId,
         vendorId: karyawan.vendorId,
       });
@@ -129,11 +121,11 @@ export function KaryawanForm({
         const changedFields: Record<string, string> = {};
 
         if (formData.nik !== karyawan.nik) changedFields.nik = formData.nik;
-        if (formData.NamaLengkap !== karyawan.namaLengkap)
+        if (formData.NamaLengkap !== karyawan.NamaLengkap)
           changedFields.NamaLengkap = formData.NamaLengkap;
         if (formData.alamat !== karyawan.alamat)
           changedFields.alamat = formData.alamat;
-        if (formData.noTelp !== karyawan.noTelepon)
+        if (formData.noTelp !== karyawan.noTelp)
           changedFields.noTelp = formData.noTelp;
         if (formData.departemenId !== karyawan.departemenId)
           changedFields.departemenId = formData.departemenId;
@@ -141,7 +133,7 @@ export function KaryawanForm({
           changedFields.vendorId = formData.vendorId;
 
         // Only include tanggalMasukKaryawan if it changed
-        if (formData.tanggalMasukKaryawan !== karyawan.tanggalMasuk) {
+        if (formData.tanggalMasukKaryawan !== karyawan.tanggalMasukKaryawan) {
           changedFields.tanggalMasukKaryawan = formData.tanggalMasukKaryawan;
         }
 
