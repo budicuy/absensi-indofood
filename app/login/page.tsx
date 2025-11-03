@@ -26,25 +26,29 @@ export default function LoginPage() {
 
       if (result?.success) {
         toast.success(result.message, {
-          duration: 2000,
+          duration: 3000,
           position: "top-center",
           style: {
             background: "#10b981",
             color: "#fff",
             fontWeight: "600",
+            padding: "16px",
+            borderRadius: "12px",
           },
         });
         setTimeout(() => {
           router.push("/dashboard");
-        }, 500);
+        }, 1500);
       } else if (result?.message) {
         toast.error(result.message, {
-          duration: 3000,
+          duration: 4000,
           position: "top-center",
           style: {
             background: "#ef4444",
             color: "#fff",
             fontWeight: "600",
+            padding: "16px",
+            borderRadius: "12px",
           },
         });
       }
