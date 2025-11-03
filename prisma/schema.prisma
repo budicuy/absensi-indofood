@@ -16,12 +16,127 @@ enum Role {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  username String  @unique
+  id       String     @id @default(cuid())
+  username String     @unique
   password String
-  name     String?
-  image    String?
-  role     Role    @default(KARYAWAN)
+  role     Role       @default(KARYAWAN)
+  Karyawan Karyawan[]
 
-  @@map("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Departemen {
+  id             String     @id @default(cuid())
+  namaDepartemen String     @unique
+  Karyawan       Karyawan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vendor {
+  id         String     @id @default(cuid())
+  namaVendor String     @unique
+  alamat     String
+  noTelp     String     @unique
+  Karyawan   Karyawan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AlasanLembur {
+  id          String    @id @default(cuid())
+  description String
+  Absensi     Absensi[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Karyawan {
+  id                   String   @id @default(cuid())
+  nik                  String   @unique
+  NamaLengkap          String
+  alamat               String
+  noTelp               String   @unique
+  tanggalMasukKaryawan DateTime
+
+  departemen   Departemen @relation(fields: [departemenId], references: [id])
+  departemenId String
+  vendor       Vendor     @relation(fields: [vendorId], references: [id])
+  vendorId     String
+  user         User?      @relation(fields: [userId], references: [id])
+  userId       String?
+  GajiPokok    GajiPokok  @relation(fields: [gajiPokokId], references: [id])
+  gajiPokokId  String
+  Absensi      Absensi[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  OvertimeRate   OvertimeRate? @relation(fields: [overtimeRateId], references: [id])
+  overtimeRateId String?
+}
+
+model JamKerja {
+  id        String    @id @default(cuid())
+  kodeShift String    @unique
+  jamMasuk  DateTime
+  jamPulang DateTime
+  Absensi   Absensi[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GajiPokok {
+  id         String  @id @default(cuid())
+  jumlahGaji Decimal
+
+  Karyawan Karyawan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum JenisOvertime {
+  REGULAR
+  WEEKEND
+}
+
+model Absensi {
+  id              String        @id @default(cuid())
+  tanggalLembur   DateTime
+  jamMasuk        DateTime
+  jamPulang       DateTime
+  deskripsiLembur String?
+  JenisOvertime   JenisOvertime
+
+  reasonId     String
+  AlasanLembur AlasanLembur @relation(fields: [reasonId], references: [id])
+
+  jamKerjaId String
+  JamKerja   JamKerja @relation(fields: [jamKerjaId], references: [id])
+
+  karyawanId String
+  Karyawan   Karyawan? @relation(fields: [karyawanId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OvertimeRate {
+  id          String   @id @default(cuid())
+  ratePerJam  Decimal
+  totalRate   Decimal
+  totalLembur DateTime @db.Timestamp(6)
+  jamMasuk    String
+  JamKeluar   String
+  tanggal     DateTime @db.Date
+
+  Karyawan Karyawan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

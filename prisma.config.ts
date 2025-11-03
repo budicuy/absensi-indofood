@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
+// Load .env file sebelum access env variables
 dotenv.config();
 
 export default defineConfig({
