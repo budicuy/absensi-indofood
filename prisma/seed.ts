@@ -7,21 +7,53 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  await Promise.all([prisma.user.deleteMany(), prisma.vendor.deleteMany()]);
+
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
-  const user = await prisma.user.upsert({
-    where: { username: "admin" },
-    update: {},
-    create: {
+  const user = await prisma.user.create({
+    data: {
       username: "admin",
       password: hashedPassword,
     },
   });
 
   console.log("✅ User created:", user);
-  console.log("📝 Login credentials:");
-  console.log("   Username: admin");
-  console.log("   Password: admin123");
+
+  const vendors = [
+    {
+      namaVendor: "PT. Tropis Service",
+      alamat: "Jl. Industri No. 123, Jakarta Utara",
+      noTelp: "021-12345678",
+    },
+    {
+      namaVendor: "PT. Garda Bhakti Nusantara",
+      alamat: "Jl. Patriot No. 45, Bekasi",
+      noTelp: "021-87654321",
+    },
+    {
+      namaVendor: "CV. Wafaiza Bati-Bati",
+      alamat: "Jl. Pantai No. 67, Bati-Bati",
+      noTelp: "0512-345678",
+    },
+    {
+      namaVendor: "PT. Fadanara Berkah Bersama",
+      alamat: "Jl. Syariah No. 89, Jakarta Selatan",
+      noTelp: "021-98765432",
+    },
+    {
+      namaVendor: "PT. Fadanara Berkah Bersama",
+      alamat: "Jl. Syariah No. 89, Jakarta Selatan",
+      noTelp: "021-98765432",
+    },
+  ];
+
+  const vendor = await prisma.vendor.createMany({
+    data: vendors,
+    skipDuplicates: true,
+  });
+
+  console.log("✅ Vendors created:", vendor.count);
 }
 
 main()
