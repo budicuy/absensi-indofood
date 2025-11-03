@@ -10,13 +10,11 @@ import {
   FileText,
   LayoutDashboard,
   Plus,
-  Settings,
   Truck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as React from "react";
 
 import {
   Sidebar,
@@ -136,7 +134,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state } = useSidebar();
+  useSidebar();
 
   return (
     <Sidebar collapsible="icon">

@@ -32,7 +32,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       await logoutAction();
       toast.success("Berhasil logout");
     } catch (error) {
-      toast.error("Gagal logout");
+      toast.error(
+        `Gagal logout: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
