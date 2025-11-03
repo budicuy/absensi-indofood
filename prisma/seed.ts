@@ -52,7 +52,6 @@ async function main() {
     },
   ];
 
-
   const vendor = await prisma.vendor.createMany({
     data: vendors,
     skipDuplicates: true,
