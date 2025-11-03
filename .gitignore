@@ -40,4 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/lib/generated/prisma
+# Prisma - allow binaries but ignore generated TS files
+/lib/generated/prisma/**/*.ts
+/lib/generated/prisma/**/*.d.ts
+!/lib/generated/prisma/**/*.node
